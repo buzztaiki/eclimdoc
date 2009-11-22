@@ -1,0 +1,23 @@
+#!/bin/sh
+
+command_annotation=src/java/org/eclim/annotation/Command.java
+
+if [ -z "$*" ]; then
+    echo "usage: $0 eclim-src-dir opts..."
+    exit 1
+fi
+
+eclim_src=$1
+shift
+
+if [ ! -f "$eclim_src/$command_annotation" ]; then
+    echo $eclim_src is not eclim source directory.
+    exit 1
+fi
+
+dist=$eclim_src/bin/eclimdoc
+mkdir -p $dist
+javac -d $dist -sourcepath $eclim_src/src/java $eclim_src/$command_annotation && \
+    javac -cp $JAVA_HOME/lib/tools.jar:$dist -d $dist EclimDoc.java && \
+    find $eclim_src/src/java/org/eclim/ -name '*.java' | \
+    xargs apt -nocompile -cp $dist -factory EclimDoc $*
